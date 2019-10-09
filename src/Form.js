@@ -18,7 +18,6 @@ const initialState = {
 
 export default function Form({
   initialFormData,
-  loading = false,
   errors = {},
   className,
   children,
@@ -26,9 +25,6 @@ export default function Form({
   onSubmit,
   onAfterSubmit,
   intl,
-  inverted,
-  size,
-  widths,
 }) {
   const reducer = (state, action) => {
     return { ...state, ...action };
@@ -384,7 +380,7 @@ export default function Form({
       value={contextValue}
       onChange={handleChange}
       onSubmit={() => handleSubmit()}
-      {...{ loading, className, inverted, size, widths, children }}
+      {...{ className, children }}
     />
   );
 }
