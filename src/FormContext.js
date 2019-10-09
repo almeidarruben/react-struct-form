@@ -1,12 +1,13 @@
 import React, { useContext } from 'react';
-import { Form } from 'semantic-ui-react';
 
 export const FormContext = React.createContext({});
 
 export function FormProvider({ value, ...props }) {
+  const { children, ...newProps } = props;
+
   return (
     <FormContext.Provider value={value}>
-      {value.isFormReady() && <Form {...props} />}
+      {value.isFormReady() && <form {...newProps}> {children}</form>}
     </FormContext.Provider>
   );
 }
