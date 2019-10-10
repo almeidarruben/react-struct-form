@@ -3,7 +3,7 @@ import React from 'react';
 import { useForm } from '../../../src/index';
 
 export default function InputField({ name, placeholder }) {
-  const { getData } = useForm();
+  const { getData, updateField } = useForm();
 
   return (
     <input
@@ -11,6 +11,7 @@ export default function InputField({ name, placeholder }) {
       name={name}
       placeholder={placeholder}
       value={getData(name)}
+      onChange={event => updateField(name, { value: event.target.value })}
     />
   );
 }

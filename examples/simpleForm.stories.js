@@ -9,22 +9,28 @@ const formData = {
 
 export const contextComponent = () => (
   <Form initialFormData={formData}>
-    <FormContext>
-      {({ getData }) => (
+    <FormContext.Consumer>
+      {({ getData, updateField }) => (
         <>
           <input
             type="text"
             placeholder="First name"
             value={getData('firstName')}
+            onChange={event =>
+              updateField('firstName', { value: event.target.value })
+            }
           />
           <input
             type="text"
             placeholder="Last Name"
             value={getData('lastName')}
+            onChange={event =>
+              updateField('lastName', { value: event.target.value })
+            }
           />
         </>
       )}
-    </FormContext>
+    </FormContext.Consumer>
   </Form>
 );
 
