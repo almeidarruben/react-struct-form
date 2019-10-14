@@ -2,6 +2,8 @@
 
 React component and set of utilities to render and manage forms with complex data structures.
 
+[![NPM registry](https://img.shields.io/npm/v/react-struct-form.svg?style=for-the-badge)](https://yarnpkg.com/en/package/react-struct-form) [![NPM license](https://img.shields.io/badge/license-mit-red.svg?style=for-the-badge)](LICENSE.md)
+
 ## Installation
 
 ```bash
