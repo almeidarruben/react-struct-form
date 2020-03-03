@@ -1,3 +1,6 @@
+const OBJECT_NOTATION_REGEX = /^[a-zA-Z0-9_]+(\.\w+)*(\.[a-zA-Z0-9_]+)$/;
+const ARRAY_FIELD_REGEX = /^[\w+.]+(\.\d)/;
+
 export function createField({
   name,
   initialValue,
@@ -6,7 +9,7 @@ export function createField({
   error = null,
   dirty = false,
   deleted = false,
-  createdAfter = false,
+  createdAfter = false, // Fields that can be added
 }) {
   return {
     name,
@@ -19,7 +22,7 @@ export function createField({
     error,
     dirty,
 
-    deleted, // When removing a field from an Array, mark it as deleted
+    deleted, // Mark the field as deleted (i.e.: Remove an array field)
     createdAfter, // Fields created after, not in the initial form data (i.e.: Add a new array field)
   };
 }
@@ -88,9 +91,6 @@ export function resetFields(fields) {
  * @param {Array} fields
  */
 export function getParentFields(fields) {
-  const ARRAY_FIELD_REGEX = /^(\w+)(\.\d)/;
-  const OBJECT_NOTATION_REGEX = /^\w+(\.[a-zA-Z]+)+$/;
-
   const parentFieldsWithoutFieldNames = fields.reduce((parentFields, field) => {
     const newParentFields = parentFields.slice();
 
@@ -101,7 +101,7 @@ export function getParentFields(fields) {
     }
 
     const matchObjectNotation = field.match(OBJECT_NOTATION_REGEX);
-    if (field.match(OBJECT_NOTATION_REGEX)) {
+    if (matchObjectNotation) {
       newParentFields.push(matchObjectNotation[0]);
       return newParentFields;
     }
@@ -114,13 +114,12 @@ export function getParentFields(fields) {
 }
 
 /**
- * Check if a given field is an array field.
+ * Check if a given field is an object
  *
  * @param {(string|Array)} field
  */
-export function isObjectNotationField(field) {
-  const OBJECT_NOTATION_REGEX = /^[a-zA-Z_]+(\.[a-zA-Z_]+)+$/;
-  return field.match(OBJECT_NOTATION_REGEX);
+export function isObjectField(field) {
+  return OBJECT_NOTATION_REGEX.test(field);
 }
 
 /**
@@ -132,10 +131,25 @@ export function isObjectNotationField(field) {
  * @returns {object}
  */
 export function createObjectFromNotation(fields, field) {
+  const ARRAY_INDEX_REGEX = /^[0-9]$/;
+
   const fieldProperties = field.split(/\./);
 
   return fieldProperties.reverse().reduce((currentObject, prop, index) => {
     const { ...newField } = currentObject;
+
+    // Check for a TMP property
+    if (newField._TMP_) {
+      const tmpValue = newField._TMP_;
+      return { [prop]: tmpValue };
+    }
+
+    // Check if it's an array
+    // Handle array field values in the first hand
+    if (ARRAY_INDEX_REGEX.test(prop)) {
+      const fieldValue = getArrayFieldValues(fields, field);
+      return { _TMP_: [fieldValue] };
+    }
 
     if (index === 0) {
       newField[prop] = fields[field].value;
@@ -147,26 +161,26 @@ export function createObjectFromNotation(fields, field) {
 }
 
 /**
- * Check if a field is an array field.
+ * Check if a given field is an array field.
  *
  * @param {(string|Array)} field
  */
 export function isArrayField(field) {
-  return field.split(/\./).length > 1;
+  return field.match(ARRAY_FIELD_REGEX);
 }
 
-export function getArrayFieldValues(fields, field) {
+function getArrayFieldValues(fields, field) {
   const fieldsArray = Object.keys(fields);
 
-  return fieldsArray.reduce((fieldValues, currentField) => {
-    const { ...newFieldValues } = fieldValues;
+  return fieldsArray.reduce((fieldValue, currentField) => {
+    const { ...newFieldValue } = fieldValue;
 
     if (currentField.startsWith(field)) {
       const fieldName = currentField.split(/\./).pop();
-      newFieldValues[fieldName] = fields[currentField].value;
+      newFieldValue[fieldName] = fields[currentField].value;
     }
 
-    return newFieldValues;
+    return newFieldValue;
   }, {});
 }
 

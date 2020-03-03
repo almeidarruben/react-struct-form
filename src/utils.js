@@ -2,9 +2,8 @@ import deepMerge from 'deepmerge';
 import {
   getParentFields,
   createObjectFromNotation,
-  getArrayFieldValues,
   isArrayField,
-  isObjectNotationField,
+  isObjectField,
 } from './field';
 
 /**
@@ -141,22 +140,12 @@ export function getFormData(fields) {
 
   // Sort field in order to ensure the correct index order for array fields
   const sortedFields = groupedFields.sort();
-
   return sortedFields.reduce((formData, field) => {
     const { ...newFormData } = formData;
 
-    if (isObjectNotationField(field)) {
+    if (isObjectField(field) || isArrayField(field)) {
       const newFieldObject = createObjectFromNotation(fields, field);
       return deepMerge(newFormData, newFieldObject);
-    } else if (isArrayField(field)) {
-      const parentFieldName = field.split(/\./)[0];
-      const arrayFieldValues = getArrayFieldValues(fields, field);
-
-      if (newFormData[parentFieldName]) {
-        newFormData[parentFieldName].push(arrayFieldValues);
-      } else {
-        newFormData[parentFieldName] = [arrayFieldValues];
-      }
     } else {
       const fieldValue = fields[field].value;
       newFormData[field] = fieldValue;
